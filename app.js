@@ -1,123 +1,115 @@
 // OrdersManager.js - модуль для управления заказами
 class OrdersManager {
-	constructor() {
-		this.db = null
-		this.DB_NAME = 'OrdersDB'
-		this.DB_VERSION = 3
-		this.STORE_NAME = 'orders'
-		this.isEditMode = false
-		this.currentRecordId = ''
-	}
+    constructor() {
+        this.db = null;
+        this.DB_NAME = 'OrdersDB';
+        this.DB_VERSION = 3;
+        this.STORE_NAME = 'orders';
+        this.isEditMode = false;
+        this.currentRecordId = '';
+    }
 
-	// Инициализация приложения
-	async init() {
-		console.log('Инициализация приложения с IndexedDB')
+    // Инициализация приложения
+    async init() {
+        console.log('Инициализация приложения с IndexedDB');
 
-		try {
-			await this.initDatabase()
-			this.setTodayDate()
+        try {
+            await this.initDatabase();
+            this.setTodayDate();
 
-			const urlParams = new URLSearchParams(window.location.search)
-			const urlRecordId = urlParams.get('id')
+            const urlParams = new URLSearchParams(window.location.search);
+            const urlRecordId = urlParams.get('id');
 
-			if (urlRecordId && urlParams.has('id')) {
-				console.log('ID из URL:', urlRecordId)
-				this.currentRecordId = urlRecordId
-				document.getElementById('recordId').value = urlRecordId
-				this.isEditMode = true
-				await this.loadRecordData(urlRecordId)
-			} else {
-				console.log('Режим новой записи')
-				this.updateUIForNewRecord()
-			}
+            if (urlRecordId && urlParams.has('id')) {
+                console.log('ID из URL:', urlRecordId);
+                this.currentRecordId = urlRecordId;
+                document.getElementById('recordId').value = urlRecordId;
+                this.isEditMode = true;
+                await this.loadRecordData(urlRecordId);
+            } else {
+                console.log('Режим новой записи');
+                this.updateUIForNewRecord();
+            }
 
-			this.setupEventListeners()
-		} catch (error) {
-			console.error('Ошибка инициализации:', error)
-			this.showError('Ошибка инициализации базы данных')
-		}
-	}
+            this.setupEventListeners();
+            console.log('Приложение успешно инициализировано');
+            
+        } catch (error) {
+            console.error('Ошибка инициализации:', error);
+            this.showError('Ошибка инициализации базы данных: ' + error.message);
+            this.showRetryButton();
+        }
+    }
 
-	// Настройка обработчиков событий
-	setupEventListeners() {
-		document
-			.getElementById('submitBtn')
-			.addEventListener('click', () => this.submitForm())
-		document
-			.getElementById('deleteBtn')
-			.addEventListener('click', () => this.deleteRecord())
-		document
-			.getElementById('closeBtn')
-			.addEventListener('click', this.closeForm)
-		document
-			.getElementById('listBtn')
-			.addEventListener('click', () => this.showList())
-		document
-			.getElementById('controlPanelBtn')
-			.addEventListener('click', () => this.showControlPanel())
+    showRetryButton() {
+        const buttonsDiv = document.querySelector('.buttons');
+        const retryBtn = document.createElement('button');
+        retryBtn.textContent = '🔄 Повторить';
+        retryBtn.className = 'btn btn-primary';
+        retryBtn.onclick = () => location.reload();
+        buttonsDiv.appendChild(retryBtn);
+    }
 
-		setTimeout(() => {
-			if (!this.isEditMode) {
-				const orderNumberInput = document.getElementById('orderNumber')
-				if (orderNumberInput) orderNumberInput.focus()
-			}
-		}, 300)
-	}
+    // Настройка обработчиков событий
+    setupEventListeners() {
+        document.getElementById('submitBtn').addEventListener('click', () => this.submitForm());
+        document.getElementById('deleteBtn').addEventListener('click', () => this.deleteRecord());
+        document.getElementById('closeBtn').addEventListener('click', this.closeForm);
+        document.getElementById('listBtn').addEventListener('click', () => this.showList());
+        document.getElementById('controlPanelBtn').addEventListener('click', () => this.showControlPanel());
 
-	// Инициализация базы данных с миграциями
-	async initDatabase() {
-		return new Promise((resolve, reject) => {
-			const request = indexedDB.open(this.DB_NAME, this.DB_VERSION)
+        setTimeout(() => {
+            if (!this.isEditMode) {
+                const orderNumberInput = document.getElementById('orderNumber');
+                if (orderNumberInput) orderNumberInput.focus();
+            }
+        }, 300);
+    }
 
-			request.onerror = () => reject(request.error)
+    // Инициализация базы данных
+    async initDatabase() {
+        return new Promise((resolve, reject) => {
+            const request = indexedDB.open(this.DB_NAME, this.DB_VERSION);
 
-			request.onsuccess = () => {
-				this.db = request.result
-				console.log('База данных успешно открыта')
-				resolve(this.db)
-			}
+            request.onerror = () => {
+                console.error('Ошибка открытия БД:', request.error);
+                reject(request.error);
+            };
 
-			request.onupgradeneeded = event => {
-				const db = event.target.result
-				const oldVersion = event.oldVersion || 0
+            request.onsuccess = () => {
+                this.db = request.result;
+                console.log('База данных успешно открыта');
+                resolve(this.db);
+            };
 
-				// Миграции данных
-				this.handleDatabaseMigration(db, oldVersion, event.newVersion)
-			}
-		})
-	}
+            request.onupgradeneeded = (event) => {
+                const db = event.target.result;
+                console.log('Обновление БД, версия:', event.oldVersion, '→', event.newVersion);
+                
+                // Удаляем старое хранилище если существует
+                if (db.objectStoreNames.contains(this.STORE_NAME)) {
+                    db.deleteObjectStore(this.STORE_NAME);
+                }
 
-	// Обработка миграций базы данных
-	handleDatabaseMigration(db, oldVersion, newVersion) {
-		console.log(`Миграция БД с версии ${oldVersion} на ${newVersion}`)
+                // Создаем новое хранилище
+                const store = db.createObjectStore(this.STORE_NAME, {
+                    keyPath: 'id',
+                    autoIncrement: false
+                });
 
-		// Миграция с версии 0 (новая БД) или 1-2 на версию 3
-		request.onupgradeneeded = event => {
-			const db = event.target.result;
-			const oldVersion = event.oldVersion || 0;
-
-			if (oldVersion < 3) {
-				if (db.objectStoreNames.contains(this.STORE_NAME)) {
-					db.deleteObjectStore(this.STORE_NAME);
-				}
-
-				const store = db.createObjectStore(this.STORE_NAME, {
-					keyPath: 'id',
-					autoIncrement: false,
-				});
-
-				// Создаем индексы для быстрого поиска
-				store.createIndex('orderNumber', 'orderNumber', { unique: false });
-				store.createIndex('date', 'date', { unique: false });
-				store.createIndex('material', 'material', { unique: false });
-				store.createIndex('bottomNumber', 'bottomNumber', { unique: false }); // Уже есть
-				store.createIndex('diameter', 'diameter', { unique: false });
-				store.createIndex('thickness', 'thickness', { unique: false });
-				store.createIndex('createdAt', 'createdAt', { unique: false });
-			}
-			console.log('Хранилище объектов создано/обновлено')
-		}
-	}
+                // Создаем индексы
+                store.createIndex('orderNumber', 'orderNumber', { unique: false });
+                store.createIndex('date', 'date', { unique: false });
+                store.createIndex('material', 'material', { unique: false });
+                store.createIndex('bottomNumber', 'bottomNumber', { unique: false });
+                store.createIndex('diameter', 'diameter', { unique: false });
+                store.createIndex('thickness', 'thickness', { unique: false });
+                store.createIndex('createdAt', 'createdAt', { unique: false });
+                
+                console.log('Хранилище объектов создано');
+            };
+        });
+    }
 
 	// Генерация UUID v4
 	generateId() {
@@ -1537,3 +1529,4 @@ const ordersManager = new OrdersManager()
 document.addEventListener('DOMContentLoaded', () => {
 	ordersManager.init()
 })
+
