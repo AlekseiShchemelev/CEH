@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="ru">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+		<meta name="theme-color" content="#1a73e8" />
+		<title>📋 Форма учета заказов</title>
+		<link rel="stylesheet" href="style.css" />
+		<link rel="manifest" href="manifest.json" />
+	</head>
+	<body>
+		<div class="container">
+			<div class="header">
+				<h1 class="title" id="formTitle">📋 Форма учета заказов</h1>
+				<div class="subtitle" id="statusInfo"></div>
+			</div>
+
+			<form id="mainForm">
+				<input type="hidden" id="recordId" value="" />
+
+				<div class="section">
+					<h3 class="section-title">Основная информация</h3>
+
+					<div class="form-group">
+						<label for="date" class="label required">📅 Дата</label>
+						<input type="date" id="date" class="input" required />
+						<span class="input-hint">Дата создания заказа</span>
+					</div>
+
+					<div class="form-group">
+						<label for="orderNumber" class="label required"
+							>📦 Номер заказа</label
+						>
+						<input
+							type="text"
+							id="orderNumber"
+							class="input"
+							required
+							placeholder="Введите номер заказа"
+							pattern="[A-Za-z0-9\-]+"
+							title="Только буквы, цифры и дефисы"
+						/>
+						<span class="input-hint">Уникальный идентификатор заказа</span>
+					</div>
+
+					<div class="form-group">
+						<label for="diameter" class="label">📏 Диаметр (мм)</label>
+						<input
+							type="number"
+							id="diameter"
+							class="input"
+							placeholder="Диаметр в миллиметрах"
+							min="0"
+							step="0.1"
+						/>
+					</div>
+
+					<div class="form-group">
+						<label for="thickness" class="label">📐 Толщина (мм)</label>
+						<input
+							type="number"
+							id="thickness"
+							class="input"
+							placeholder="Толщина в миллиметрах"
+							min="0"
+							step="0.1"
+						/>
+					</div>
+
+					<div class="form-group">
+						<label for="typeSize" class="label">🔠 Типоразмер</label>
+						<input
+							type="text"
+							id="typeSize"
+							class="input"
+							placeholder="Например: 1000×2000"
+							pattern="[0-9]+×[0-9]+"
+							title="Формат: число×число (например: 1000×2000)"
+						/>
+						<span class="input-hint">Формат: ширина×высота (мм)</span>
+					</div>
+
+					<div class="form-group">
+						<label for="cutting" class="label">⚙️ Раскрой</label>
+						<select id="cutting" class="select">
+							<option value="">— Выберите раскрой —</option>
+							<option value="О">О</option>
+							<option value="А">А</option>
+							<option value="Б">Б</option>
+							<option value="В">В</option>
+							<option value="Г">Г</option>
+							<option value="Д">Д</option>
+							<option value="Е">Е</option>
+							<option value="Ж">Ж</option>
+							<option value="З">З</option>
+						</select>
+					</div>
+
+					<div class="form-group">
+						<label for="bottomNumber" class="label">🔢 Номер днища</label>
+						<input
+							type="text"
+							id="bottomNumber"
+							class="input"
+							placeholder="Номер днища"
+						/>
+					</div>
+
+					<div class="form-group">
+						<label for="material" class="label">🧱 Материал</label>
+						<select id="material" class="select">
+							<option value="">— Выберите материал —</option>
+							<option value="09Г2С">09Г2С</option>
+							<option value="Ст3сп">Ст3сп</option>
+							<option value="12Х18Н10Т">12Х18Н10Т</option>
+							<option value="08Х18Н10">08Х18Н10</option>
+							<option value="AISI304">AISI304</option>
+							<option value="AISI304L">AISI304L</option>
+							<option value="AISI321">AISI321</option>
+						</select>
+					</div>
+				</div>
+
+				<div class="section">
+					<h3 class="section-title">👥 Исполнители и даты</h3>
+
+					<div class="executor-item">
+						<div class="executor-title">Сварщик</div>
+						<div class="form-row">
+							<div class="form-group">
+								<input
+									type="text"
+									id="executor1"
+									class="input"
+									placeholder="ФИО сварщика"
+								/>
+							</div>
+							<div class="form-group">
+								<input type="date" id="date1" class="input" max="2099-12-31" />
+							</div>
+						</div>
+					</div>
+
+					<div class="executor-item">
+						<div class="executor-title">Штамповка</div>
+						<div class="form-row">
+							<div class="form-group">
+								<input
+									type="text"
+									id="executor2"
+									class="input"
+									placeholder="ФИО исполнителя"
+								/>
+							</div>
+							<div class="form-group">
+								<input type="date" id="date2" class="input" max="2099-12-31" />
+							</div>
+						</div>
+					</div>
+
+					<div class="executor-item">
+						<div class="executor-title">Отбортовка</div>
+						<div class="form-row">
+							<div class="form-group">
+								<input
+									type="text"
+									id="executor3"
+									class="input"
+									placeholder="ФИО исполнителя"
+								/>
+							</div>
+							<div class="form-group">
+								<input type="date" id="date3" class="input" max="2099-12-31" />
+							</div>
+						</div>
+					</div>
+
+					<div class="executor-item">
+						<div class="executor-title">Калибровка</div>
+						<div class="form-row">
+							<div class="form-group">
+								<input
+									type="text"
+									id="executor4"
+									class="input"
+									placeholder="ФИО исполнителя"
+								/>
+							</div>
+							<div class="form-group">
+								<input type="date" id="date4" class="input" max="2099-12-31" />
+							</div>
+						</div>
+					</div>
+
+					<div class="executor-item">
+						<div class="executor-title">Сварщик (заглушки)</div>
+						<div class="form-row">
+							<div class="form-group">
+								<input
+									type="text"
+									id="executor5"
+									class="input"
+									placeholder="ФИО сварщика"
+								/>
+							</div>
+							<div class="form-group">
+								<input type="date" id="date5" class="input" max="2099-12-31" />
+							</div>
+						</div>
+					</div>
+
+					<div class="executor-item">
+						<div class="executor-title">Резчик</div>
+						<div class="form-row">
+							<div class="form-group">
+								<input
+									type="text"
+									id="executor6"
+									class="input"
+									placeholder="ФИО резчика"
+								/>
+							</div>
+							<div class="form-group">
+								<input type="date" id="date6" class="input" max="2099-12-31" />
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="section">
+					<h3 class="section-title">🔥 Термическая обработка</h3>
+
+					<div class="form-group">
+						<label for="heatTreatment" class="label">Режим ТО</label>
+						<input
+							type="text"
+							id="heatTreatment"
+							class="input"
+							placeholder="Укажите режим термической обработки"
+						/>
+					</div>
+
+					<div class="form-group">
+						<label for="treatmentDate" class="label">📅 Дата ТО</label>
+						<input
+							type="date"
+							id="treatmentDate"
+							class="input"
+							max="2099-12-31"
+						/>
+					</div>
+				</div>
+			</form>
+
+			<div class="buttons">
+				<button type="button" class="btn btn-primary" id="submitBtn">
+					💾 Сохранить
+				</button>
+
+				<button
+					type="button"
+					class="btn btn-danger"
+					id="deleteBtn"
+					style="display: none"
+				>
+					🗑️ Удалить
+				</button>
+
+				<button type="button" class="btn btn-secondary" id="closeBtn">
+					⬅ Закрыть
+				</button>
+
+				<button type="button" class="btn btn-secondary" id="listBtn">
+					📋 К списку заказов
+				</button>
+
+				<button type="button" class="btn btn-secondary" id="controlPanelBtn">
+					⚙️ Панель управления
+				</button>
+			</div>
+
+			<div id="toast" class="toast"></div>
+		</div>
+		<script src="app.js"></script>
+	</body>
+</html>
